@@ -9,6 +9,25 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+// Verificación de dominio para la app de Android (Trusted Web Activity).
+// Express ignora por defecto los archivos/carpetas que empiezan con "."
+// (como .well-known), así que se sirve con una ruta explícita.
+app.get("/.well-known/assetlinks.json", (req, res) => {
+  res.type("application/json");
+  res.json([
+    {
+      relation: ["delegate_permission/common.handle_all_urls"],
+      target: {
+        namespace: "android_app",
+        package_name: "com.onrender.band_monitor_1.twa",
+        sha256_cert_fingerprints: [
+          "BF:5B:03:17:6D:6B:57:7D:63:83:24:EE:53:EE:D2:2D:7B:72:16:61:89:3F:E2:CF:EC:F5:95:62:05:84:67:B7"
+        ]
+      }
+    }
+  ]);
+});
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] }
